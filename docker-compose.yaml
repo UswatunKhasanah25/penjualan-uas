@@ -1,48 +1,50 @@
 version: '3.8'
 services:
-    app:
-        image: uswatun24/uswa-uas
-        container_name: web-server
-        build:
-            context: ./php
-            dockerfile: Dockerfile
-        depends_on:
-            - db
-        volumes:
-            - ./php/src:/var/www/html/ 
-        ports:
-            - 8000:80
-    db:
-        container_name: db
-        image: mysql
-        restart: always
-        environment:
-            MYSQL_ROOT_PASSWORD: admin
-            MYSQL_DATABASE: penjualan
-        ports:
-            - "3306:3306"
-        volumes:
-            - db:/var/lib/mysql
-            - ./penjualan.sql:/docker-entrypoint-initdb.d/penjualan.sql
-        networks:
-             - backend
-
-    phpmyadmin:
-        image: phpmyadmin/phpmyadmin
-        ports:
-            - '3060:80'
-        restart: always
-        environment:
-            PMA_HOST: db
-        depends_on:
-            - db
+  php-apache-environment:
+    image: uswatun24/uswa-uas
+    container_name: php-apache
+    depends_on:
+      - db
     volumes:
-        db:
-
+      - ./php/src:/var/www/html/
+    ports:
+      - 8000:80
     networks:
-        backend:
-        name: backend-network
-        ipam:
-            driver: default
-        config:
-             - subnet: 172.20.0.0/24
+      - backend
+
+  db:
+    container_name: db
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: penjualan
+    ports:
+      - "3306:3306"
+    volumes:
+      - db:/var/lib/mysql
+      - ./penjualan.sql:/docker-entrypoint-initdb.d/penjualan.sql
+    networks:
+      - backend
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - '3060:80'
+    restart: always
+    environment:
+      PMA_HOST: db
+    depends_on:
+      - db
+
+
+volumes:
+  db:
+
+networks:
+  backend:
+    name: backend-network
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/24
